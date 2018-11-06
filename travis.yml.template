@@ -8,6 +8,15 @@ language: generic
 services:
   - docker
 
+.before_script: &auto_skip
+- |
+    if git diff --name-only "$TRAVIS_COMMIT_RANGE" | grep -Eq "^$NODE_VERSION\/$VARIANT\/Dockerfile"; then
+      echo "Change of $NODE_VERSION\$VARIANT\Dockerfile detected."
+    else
+      echo "Skip build of $NODE_VERSION\$VARIANT\Dockerfile as it's not changed."
+      exit
+    fi
+
 script: ./test-build.sh $NODE_VERSION $VARIANT
 
 stages:
