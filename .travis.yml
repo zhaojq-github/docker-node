@@ -30,6 +30,14 @@ services:
       echo "Skip build of $Dockerfile as it's not changed."
       exit
     fi
+    if [ "alpine" = "$VARIANT" ]; then
+      mkdir -p ccache
+      (
+        cd ccache
+        nc -l -p 5678 < cache.tar.gz &
+        nc -l -p 1234 > new-cache.tar.gz &
+      )
+    fi
 
 script: ./test-build.sh $NODE_VERSION $VARIANT
 
@@ -112,6 +120,18 @@ jobs:
         - NODE_VERSION: "10"
         - VARIANT: "alpine"
 
+      after_success:
+        - ccache -s
+      addons:
+        apt:
+          packages:
+            - netcat
+      before_cache:
+        - mv ccache/new-cache.tar.gz ccache/cache.tar.gz
+      cache:
+        directories:
+          - ccache/
+
     - stage: Build
       before_script: *auto_skip
       env:
@@ -129,6 +149,18 @@ jobs:
       env:
         - NODE_VERSION: "11"
         - VARIANT: "alpine"
+
+      after_success:
+        - ccache -s
+      addons:
+        apt:
+          packages:
+            - netcat
+      before_cache:
+        - mv ccache/new-cache.tar.gz ccache/cache.tar.gz
+      cache:
+        directories:
+          - ccache/
 
     - stage: Build
       before_script: *auto_skip
@@ -153,6 +185,18 @@ jobs:
       env:
         - NODE_VERSION: "6"
         - VARIANT: "alpine"
+
+      after_success:
+        - ccache -s
+      addons:
+        apt:
+          packages:
+            - netcat
+      before_cache:
+        - mv ccache/new-cache.tar.gz ccache/cache.tar.gz
+      cache:
+        directories:
+          - ccache/
 
     - stage: Build
       before_script: *auto_skip
@@ -183,6 +227,18 @@ jobs:
       env:
         - NODE_VERSION: "8"
         - VARIANT: "alpine"
+
+      after_success:
+        - ccache -s
+      addons:
+        apt:
+          packages:
+            - netcat
+      before_cache:
+        - mv ccache/new-cache.tar.gz ccache/cache.tar.gz
+      cache:
+        directories:
+          - ccache/
 
     - stage: Build
       before_script: *auto_skip
